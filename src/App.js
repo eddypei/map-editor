@@ -3,16 +3,16 @@ import L from 'leaflet';
 import { Map, TileLayer, Marker, Popup, FeatureGroup } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 
+import MarkerIcon from 'leaflet/dist/images/marker-icon.png';
+import MarkerShadow from 'leaflet/dist/images/marker-shadow.png';
+
 import './App.css';
 
 let myIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet/dist/images/marker-icon.png',
-  // iconSize: [38, 95],
+  iconUrl: MarkerIcon,
+  shadowUrl: MarkerShadow,
   iconAnchor: [12.5, 41],
   popupAnchor: [0, -41],
-  shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
-  // shadowSize: [68, 95],
-  // shadowAnchor: [22, 94],
 });
 
 export default class App extends Component {
@@ -20,6 +20,18 @@ export default class App extends Component {
     lat: -23.561584,
     lng: -46.656093,
     zoom: 19,
+  };
+
+  _onCreated = e => {
+    console.log('created something:', e);
+  };
+
+  _onEdited = e => {
+    console.log('edited something:', e);
+    e.layers.eachLayer(layer => {
+      //do whatever you want; most likely save back to db
+      console.log('layer:', layer);
+    });
   };
 
   render() {
@@ -40,10 +52,10 @@ export default class App extends Component {
         <FeatureGroup>
           <EditControl
             position="topright"
-            onEdited={this._onEditPath}
-            onCreated={this._onCreate}
-            onDeleted={this._onDeleted}
-            draw={{ rectangle: false }}
+            onCreated={this._onCreated}
+            onEdited={this._onEdited}
+            // onDeleted={this._onDeleted}
+            // draw={{ rectangle: false }}
           />
         </FeatureGroup>
       </Map>

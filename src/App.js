@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import L from 'leaflet';
-import { Map, TileLayer, Marker, Popup, FeatureGroup, Polygon } from 'react-leaflet';
+import { Map, TileLayer, Marker, Popup, FeatureGroup, Polygon, Polyline } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 import GeoJSON from 'geojson';
 
@@ -32,6 +32,9 @@ class MyGeoJSON extends Component {
         } else if (geometry.type === 'Polygon') {
           const positions = geometry.coordinates[0].map(([lng, lat]) => [lat, lng]);
           return <Polygon key={index} positions={positions} />;
+        } else if (geometry.type === 'LineString') {
+          const positions = geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+          return <Polyline key={index} positions={positions} />;
         }
       }
     });
@@ -48,6 +51,11 @@ export default class App extends Component {
 
   _onCreated = e => {
     console.log('created something:', e);
+    console.log('layer._leaflet_id:', e.layer._leaflet_id);
+    console.log('layer to geojson:', e.layer.toGeoJSON());
+    console.log('this.objects:', this.objects.getLayers());
+    console.log('this.objects.toGeoJSON():', this.objects.toGeoJSON());
+    localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
   };
 
   _onEdited = e => {
@@ -56,17 +64,11 @@ export default class App extends Component {
       //do whatever you want; most likely save back to db
       console.log('layer:', layer);
       console.log('layer._leaflet_id:', layer._leaflet_id);
-      console.log('layer to geojson:', layer.toGeoJSON({ include: '_leaflet_id' }));
-      console.log(
-        'layer to geojson 2:',
-        GeoJSON.parse(layer, {
-          Point: ['_latlng.lat', '_latlng.lng'],
-          Polygon: 'options.positions',
-          include: ['_leaflet_id'],
-        })
-      );
+      console.log('layer to geojson:', layer.toGeoJSON());
     });
-    console.log(this.objects.map(obj => obj.toGeoJSON()));
+    // console.log(this.objects.toGeoJSON());
+    console.log('this.objects:', this.objects.getLayers());
+    localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
   };
 
   _onDeleted = e => {
@@ -75,27 +77,21 @@ export default class App extends Component {
       console.log('layer:', layer);
       console.log('layer to geojson:', layer.toGeoJSON());
     });
+    localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
   };
 
   _onFeatureGroupReady = featureGroupRef => {
-    this.objects = featureGroupRef.leafletElement.getLayers();
-
-    console.log(this.objects);
-    console.log(this.objects.map(obj => obj._leaflet_id));
-    console.log(
-      GeoJSON.parse(this.objects, {
-        Point: ['_latlng.lat', '_latlng.lng'],
-        Polygon: [['options.positions']],
-      })
-    );
-
-    featureGroupRef.leafletElement.eachLayer(layer => {
-      console.log('featureGroup layer to geojson:', layer.toGeoJSON());
-    });
+    this.objects = featureGroupRef.leafletElement;
+    localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
   };
 
   render() {
     const position = [this.state.lat, this.state.lng];
+
+    let geoJSONData = JSON.parse(localStorage.getItem('objects'));
+    if (!geoJSONData) {
+      geoJSONData = GeoJSONData;
+    }
 
     return (
       <Map id="map" center={position} zoom={this.state.zoom} maxZoom={19}>
@@ -103,20 +99,16 @@ export default class App extends Component {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         />
-        <FeatureGroup ref={featureGroupRef => this._onFeatureGroupReady(featureGroupRef)}>
+        <FeatureGroup ref={this._onFeatureGroupReady}>
           <EditControl
             position="topright"
             onCreated={this._onCreated}
             onEdited={this._onEdited}
             onDeleted={this._onDeleted}
             onMounted={this._onMounted}
+            draw={{ circle: false, circlemarker: false }}
           />
-
-          <Marker position={position}>
-            <Popup>I was created manually</Popup>
-          </Marker>
-
-          <MyGeoJSON data={GeoJSONData} />
+          <MyGeoJSON data={geoJSONData} />
         </FeatureGroup>
       </Map>
     );

@@ -8,6 +8,25 @@ body {
   height: 100%;
 }
 
+.action {
+  position: fixed;
+  right: 10px;
+  z-index: 999;
+  background-color: white;
+  color: black;
+  border: 2px solid darkgray;
+  border-radius: 5px;
+  padding: 2px 3px 0;
+}
+
+#save-button {
+  top: 230px;
+}
+
+#load-button {
+  top: 270px;
+}
+
 #map {
   height: 100%;
 }

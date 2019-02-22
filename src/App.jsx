@@ -42,55 +42,45 @@ export default class App extends Component {
   };
   objects = [];
 
-  _onCreated = e => {
-    console.log('created something:', e);
-    console.log('layer._leaflet_id:', e.layer._leaflet_id);
-    console.log('layer to geojson:', e.layer.toGeoJSON());
-    console.log('this.objects:', this.objects.getLayers());
-    console.log('this.objects.toGeoJSON():', this.objects.toGeoJSON());
+  saveObjects = () => {
     localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
+  };
+
+  _onCreated = e => {
+    this.saveObjects();
   };
 
   _onEdited = e => {
-    console.log('edited something:', e);
-    e.layers.eachLayer(layer => {
-      //do whatever you want; most likely save back to db
-      console.log('layer:', layer);
-      console.log('layer._leaflet_id:', layer._leaflet_id);
-      console.log('layer to geojson:', layer.toGeoJSON());
-    });
-    // console.log(this.objects.toGeoJSON());
-    console.log('this.objects:', this.objects.getLayers());
-    localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
+    this.saveObjects();
   };
 
   _onDeleted = e => {
-    console.log('deleted something:', e);
-    e.layers.eachLayer(layer => {
-      console.log('layer:', layer);
-      console.log('layer to geojson:', layer.toGeoJSON());
-    });
-    localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
+    this.saveObjects();
   };
 
   _onFeatureGroupReady = featureGroupRef => {
     this.objects = featureGroupRef.leafletElement;
-    localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
+    this.saveObjects();
   };
 
   saveData = () => {
     if (window.confirm('Are you sure you want to save?')) {
       let content = localStorage.getItem('objects');
-      var a = document.createElement('a');
-      var file = new Blob([content], { type: 'application/json' });
+      let a = document.createElement('a');
+      let file = new Blob([content], { type: 'application/json' });
       a.href = URL.createObjectURL(file);
       a.download = 'GeoJSON.json';
       a.click();
     }
   };
 
-  loadData = () => {
-    alert('in progress...');
+  loadData = e => {
+    let fr = new FileReader();
+    fr.onload = () => {
+      localStorage.setItem('objects', fr.result);
+      window.location.reload();
+    };
+    fr.readAsText(e.target.files[0]);
   };
 
   render() {
@@ -107,9 +97,10 @@ export default class App extends Component {
           <SaveIcon />
         </button>
 
-        <button onClick={this.loadData} title="Load from GeoJSON file" className="action" id="load-button">
+        <div title="Load from GeoJSON file" className="action" id="load-button">
           <SaveAltIcon />
-        </button>
+          <input type="file" onChange={this.loadData} />
+        </div>
 
         <Map id="map" center={position} zoom={this.state.zoom} maxZoom={19}>
           <TileLayer

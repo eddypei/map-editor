@@ -1,5 +1,9 @@
 This project was created with [Create React App](https://github.com/facebook/create-react-app).
 
+# Disclaimer
+
+This project was made focusing in [Google Chrome](https://www.google.com/chrome/). Some features may no work in other browsers.
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -21,7 +25,7 @@ You will also see any lint errors in the console.
 - [ ] Select a layer as 'active' and show only the objects of this layer
 - [x] Load data from GeoJSON file and draw on the map
 - [x] Load data from localStorage file and draw on the map
-- [ ] Load data from selected GeoJSON file
+- [x] Load data from selected GeoJSON file
 - [x] Save edited data to localStorage
 - [x] Save edited data to GeoJSON file
 - [ ] Next step...

@@ -18,7 +18,7 @@ class MyGeoJSON extends Component {
       if (type === 'Point') {
         const [lng, lat] = coordinates;
         return (
-          <Marker key={index} position={[lat, lng]} properties={`huebr${index}`}>
+          <Marker key={index} position={[lat, lng]}>
             <Popup>I was created programatically</Popup>
           </Marker>
         );
@@ -36,27 +36,19 @@ class MyGeoJSON extends Component {
 
 export default class App extends Component {
   state = {
-    lat: -23.561584,
-    lng: -46.656093,
-    zoom: 19,
+    lat: -23.562134,
+    lng: -46.654993,
+    zoom: 21,
   };
   objects = [];
 
-  saveObjects = () => {
-    localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
-  };
+  saveObjects = () => localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
 
-  _onCreated = e => {
-    this.saveObjects();
-  };
+  _onCreated = e => this.saveObjects();
 
-  _onEdited = e => {
-    this.saveObjects();
-  };
+  _onEdited = e => this.saveObjects();
 
-  _onDeleted = e => {
-    this.saveObjects();
-  };
+  _onDeleted = e => this.saveObjects();
 
   _onFeatureGroupReady = featureGroupRef => {
     this.objects = featureGroupRef.leafletElement;
@@ -102,10 +94,11 @@ export default class App extends Component {
           <input type="file" onChange={this.loadData} />
         </div>
 
-        <Map id="map" center={position} zoom={this.state.zoom} maxZoom={19}>
+        <Map id="map" center={position} zoom={this.state.zoom} maxZoom={22}>
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey={apikey}"
+            apikey="898c4d67a8cb42a39705b6e58be006ea"
+            attribution='&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           <FeatureGroup ref={this._onFeatureGroupReady}>
             <EditControl

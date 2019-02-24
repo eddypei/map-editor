@@ -6012,6 +6012,11 @@ leaflet-draw@^1.0.4:
   resolved "https://registry.yarnpkg.com/leaflet-draw/-/leaflet-draw-1.0.4.tgz#45be92f378ed253e7202fdeda1fcc71885198d46"
   integrity sha512-rsQ6saQO5ST5Aj6XRFylr5zvarWgzWnrg46zQ1MEOEIHsppdC/8hnN8qMoFvACsPvTioAuysya/TVtog15tyAQ==
 
+leaflet-indoor-pytek@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/leaflet-indoor-pytek/-/leaflet-indoor-pytek-1.0.1.tgz#bf53344eb89e664626277ad4fd8eef69cc5cf3c8"
+  integrity sha512-jKM+8Yr+QJQbz7x1HtauCp7VsA+6+tvwWdibFRzWAkIL8wcwPi1ng7ElTBu2P0MCcuj9ZkBFDFdqhVUmW9g+uQ==
+
 leaflet@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.4.0.tgz#d5f56eeb2aa32787c24011e8be4c77e362ae171b"

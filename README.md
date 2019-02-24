@@ -19,7 +19,7 @@ You will also see any lint errors in the console.
 ## Roadmap
 
 - [x] Create a Leaflet map
-- [x] Add Leaflet.draw toolbar to draw and edit polygons
+- [x] Draw and edit polygons
 - [x] Save & Load
   - [x] Load data from GeoJSON file and draw on the map
   - [x] Load data from localStorage file and draw on the map
@@ -29,5 +29,5 @@ You will also see any lint errors in the console.
 - [ ] Layers
   - [ ] Add layers to the map (like floors in a building)
   - [ ] Remove layers to the map
-  - [ ] Select a layer as 'active' and show only the objects of this layer
+  - [x] Select a layer as 'active' and highlight the objects of this layer
 - [ ] Next step...

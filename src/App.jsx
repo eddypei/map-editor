@@ -1,7 +1,8 @@
 import React, { Component, Fragment } from 'react';
-// import L from 'leaflet';
-import { Map, TileLayer, Marker, Popup, FeatureGroup, Polygon, Polyline } from 'react-leaflet';
+import L from 'leaflet';
+import { Map, TileLayer, FeatureGroup, Polygon, Polyline, CircleMarker } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
+import leafletIndoor from 'leaflet-indoor-pytek';
 
 import SaveIcon from '@material-ui/icons/Save';
 import SaveAltIcon from '@material-ui/icons/SaveAlt';
@@ -14,21 +15,18 @@ import './App.css';
 class MyGeoJSON extends Component {
   render() {
     return this.props.data.features.map((feature, index) => {
+      const { properties } = feature;
       const { type, coordinates } = feature.geometry;
       if (type === 'Point') {
         const [lng, lat] = coordinates;
-        return (
-          <Marker key={index} position={[lat, lng]}>
-            <Popup>I was created programatically</Popup>
-          </Marker>
-        );
+        return <CircleMarker key={index} center={[lat, lng]} properties={properties} />;
       } else if (type === 'Polygon') {
         const positions = coordinates[0].map(([lng, lat]) => [lat, lng]);
-        return <Polygon key={index} positions={positions} />;
+        return <Polygon key={index} positions={positions} properties={properties} />;
       } else {
         //type === 'LineString'
         const positions = coordinates.map(([lng, lat]) => [lat, lng]);
-        return <Polyline key={index} positions={positions} />;
+        return <Polyline key={index} positions={positions} properties={properties} />;
       }
     });
   }
@@ -41,18 +39,92 @@ export default class App extends Component {
     zoom: 21,
   };
   objects = [];
+  map = null;
+  indoorLayer = null;
+  levelControl = null;
 
   saveObjects = () => localStorage.setItem('objects', JSON.stringify(this.objects.toGeoJSON()));
 
-  _onCreated = e => this.saveObjects();
+  createLevelControl = () => {
+    let geoData = JSON.parse(localStorage.getItem('objects'));
+    if (!geoData) {
+      geoData = GeoData;
+    }
+    let indoorLayer = new L.Indoor(geoData, {
+      style: feature => ({
+        color: '#666',
+        fillColor: 'white',
+        fillOpacity: 1,
+        weight: 2,
+      }),
+    });
+    indoorLayer.setLevel('0');
+    indoorLayer.addTo(this.map);
+    this.indoorLayer = indoorLayer;
 
-  _onEdited = e => this.saveObjects();
+    let levelControl = new L.Control.Level({
+      level: indoorLayer.getLevel(),
+      levels: indoorLayer.getLevels(),
+      indoorLayer,
+    });
+    levelControl.addTo(this.map);
+    this.levelControl = levelControl;
+  };
 
-  _onDeleted = e => this.saveObjects();
+  updateLevelControl = () => {
+    let currentLevel = this.indoorLayer.getLevel();
+    this.indoorLayer.remove();
+    this.indoorLayer = new L.Indoor(this.objects.toGeoJSON(), {
+      style: feature => ({
+        color: '#666',
+        fillColor: 'white',
+        fillOpacity: 1,
+        weight: 2,
+      }),
+    });
+    this.indoorLayer.setLevel(currentLevel);
+    this.indoorLayer.addTo(this.map);
+
+    this.levelControl.remove();
+    this.levelControl = new L.Control.Level({
+      level: this.indoorLayer.getLevel(),
+      levels: this.indoorLayer.getLevels(),
+      indoorLayer: this.indoorLayer,
+    });
+    this.levelControl.addTo(this.map);
+  };
+
+  _onCreated = e => {
+    e.layer.feature = {
+      type: 'Feature',
+      properties: { level: this.indoorLayer.getLevel() },
+    };
+    this.saveObjects();
+    this.updateLevelControl();
+  };
+
+  _onEdited = e => {
+    this.saveObjects();
+    this.updateLevelControl();
+  };
+
+  _onDeleted = e => {
+    this.saveObjects();
+    this.updateLevelControl();
+  };
 
   _onFeatureGroupReady = featureGroupRef => {
     this.objects = featureGroupRef.leafletElement;
+    this.objects.eachLayer(layer => {
+      layer.feature = {
+        type: 'Feature',
+        properties: layer.options.properties,
+      };
+    });
+
     this.saveObjects();
+
+    this.createLevelControl();
   };
 
   saveData = () => {
@@ -75,6 +147,8 @@ export default class App extends Component {
     fr.readAsText(e.target.files[0]);
   };
 
+  _onMapReady = ref => (this.map = ref.leafletElement);
+
   render() {
     const position = [this.state.lat, this.state.lng];
 
@@ -94,7 +168,7 @@ export default class App extends Component {
           <input type="file" onChange={this.loadData} />
         </div>
 
-        <Map id="map" center={position} zoom={this.state.zoom} maxZoom={22}>
+        <Map id="map" ref={this._onMapReady} center={position} zoom={this.state.zoom} maxZoom={22}>
           <TileLayer
             url="https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey={apikey}"
             apikey="898c4d67a8cb42a39705b6e58be006ea"
@@ -106,8 +180,7 @@ export default class App extends Component {
               onCreated={this._onCreated}
               onEdited={this._onEdited}
               onDeleted={this._onDeleted}
-              onMounted={this._onMounted}
-              draw={{ circle: false, circlemarker: false }}
+              draw={{ circle: false, marker: false }}
             />
             <MyGeoJSON data={geoData} />
           </FeatureGroup>
